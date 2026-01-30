@@ -1,8 +1,8 @@
 
 import React from 'react';
-import Layout from '../components/Layout';
-import { Screen } from '../types';
-import { RevenueAreaChart, OrderVolumeBarChart } from '../components/Charts';
+import Layout from '../components/Layout.tsx';
+import { Screen } from '../types.ts';
+import { RevenueAreaChart, OrderVolumeBarChart } from '../components/Charts.tsx';
 
 interface OverviewProps {
   onNavigate: (screen: Screen) => void;

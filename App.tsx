@@ -1,15 +1,15 @@
 
 import React, { useState, useCallback } from 'react';
-import { Screen } from './types';
-import Login from './screens/Login';
-import Overview from './screens/Overview';
-import Orders from './screens/Orders';
-import OrderDetail from './screens/OrderDetail';
-import Inventory from './screens/Inventory';
-import InventoryDetail from './screens/InventoryDetail';
-import Customers from './screens/Customers';
-import Staff from './screens/Staff';
-import Settings from './screens/Settings';
+import { Screen } from './types.ts';
+import Login from './screens/Login.tsx';
+import Overview from './screens/Overview.tsx';
+import Orders from './screens/Orders.tsx';
+import OrderDetail from './screens/OrderDetail.tsx';
+import Inventory from './screens/Inventory.tsx';
+import InventoryDetail from './screens/InventoryDetail.tsx';
+import Customers from './screens/Customers.tsx';
+import Staff from './screens/Staff.tsx';
+import Settings from './screens/Settings.tsx';
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.LOGIN);

@@ -1,7 +1,7 @@
 
 import React from 'react';
-import Layout from '../components/Layout';
-import { Screen, Order } from '../types';
+import Layout from '../components/Layout.tsx';
+import { Screen, Order } from '../types.ts';
 
 interface OrdersProps {
   onNavigate: (screen: Screen, id?: string) => void;
