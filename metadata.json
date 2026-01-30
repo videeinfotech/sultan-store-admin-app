@@ -1,0 +1,7 @@
+{
+  "name": "Sultan - Store Admin",
+  "description": "A comprehensive, high-performance store administration dashboard with real-time insights, inventory tracking, and order management.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
