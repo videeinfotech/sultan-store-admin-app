@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout.tsx';
 import { Screen, InventoryItem } from '../types.ts';
-import { storeAdminApi } from '../api.ts';
+import { storeAdminApi, formatPrice } from '../api.ts';
 import { useToast } from '../components/Toast.tsx';
 
 interface InventoryProps {
@@ -15,6 +15,8 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All Items');
+  const [sortBy, setSortBy] = useState<'name' | 'stock' | 'price'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -27,6 +29,7 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
         }
       } catch (err) {
         console.error('Failed to fetch store inventory', err);
+        showToast('Failed to load inventory', 'error');
       } finally {
         setLoading(false);
       }
@@ -41,6 +44,29 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
     if (filter === 'Out of Stock') return item.stock === 0;
     return true;
   });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    let comparison = 0;
+
+    if (sortBy === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortBy === 'stock') {
+      comparison = a.stock - b.stock;
+    } else if (sortBy === 'price') {
+      comparison = (a.price || 0) - (b.price || 0);
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const handleSort = (newSortBy: 'name' | 'stock' | 'price') => {
+    if (sortBy === newSortBy) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder('asc');
+    }
+  };
 
   return (
     <Layout
@@ -81,7 +107,7 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
           {['All Items', 'Low Stock', 'Out of Stock'].map((f) => (
             <button
               key={f}
@@ -93,19 +119,47 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
           ))}
         </div>
 
-        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">Product Catalog</h3>
+        {/* Sorting */}
+        <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar">
+          <span className="text-xs font-bold text-gray-400 uppercase flex items-center">Sort by:</span>
+          {[
+            { key: 'name', label: 'Name' },
+            { key: 'stock', label: 'Stock' },
+            { key: 'price', label: 'Price' }
+          ].map((sort) => (
+            <button
+              key={sort.key}
+              onClick={() => handleSort(sort.key as 'name' | 'stock' | 'price')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap flex items-center gap-1 ${sortBy === sort.key
+                ? 'bg-primary/10 text-primary border border-primary'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                }`}
+            >
+              {sort.label}
+              {sortBy === sort.key && (
+                <span className="material-symbols-outlined text-[14px]">
+                  {sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">
+          Product Catalog ({sortedItems.length})
+        </h3>
         {loading ? (
           <div className="flex justify-center p-12">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="space-y-3 pb-8">
-            {filteredItems.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <div className="text-center p-12 text-gray-400">
                 No products found
               </div>
             ) : (
-              filteredItems.map((item) => (
+              sortedItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(Screen.INVENTORY_DETAIL, item.id)}
@@ -118,13 +172,21 @@ const Inventory: React.FC<InventoryProps> = ({ onNavigate }) => {
                   <div className="flex-1 text-left min-w-0">
                     <p className="text-sm font-extrabold truncate text-gray-900 dark:text-white">{item.name}</p>
                     <p className="text-xs text-gray-400 font-bold mb-1">SKU: {item.sku || 'N/A'}</p>
-                    {(item.lowStock || item.stock < 10) && (
-                      <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-black rounded-full uppercase">Low Stock</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {(item.lowStock || item.stock < 10) && item.stock > 0 && (
+                        <span className="inline-block px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-black rounded-full uppercase">Low Stock</span>
+                      )}
+                      {item.stock === 0 && (
+                        <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-black rounded-full uppercase">Out of Stock</span>
+                      )}
+                      {item.price && (
+                        <span className="text-xs text-gray-500 font-bold">{formatPrice(item.price)}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">In Stock</p>
-                    <p className={`text-xl font-black ${(item.lowStock || item.stock < 10) ? 'text-red-600' : 'text-primary'}`}>{item.stock}</p>
+                    <p className={`text-xl font-black ${item.stock === 0 ? 'text-red-600' : (item.lowStock || item.stock < 10) ? 'text-orange-600' : 'text-primary'}`}>{item.stock}</p>
                   </div>
                 </button>
               ))

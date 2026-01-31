@@ -1,15 +1,30 @@
 
-const BASE_URL = 'https://sultan.quicdeal.in/api/v1';
+export const formatPrice = (price: number | string) => {
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    return `₹${Math.round(num || 0).toLocaleString('en-IN')}`;
+};
+
+// Automatically detect if running locally or on production
+const isLocalhost = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '[::1]';
+
+const BASE_URL = isLocalhost
+    ? 'http://localhost:8000/api/v1'
+    : 'https://sultan.quicdeal.in/api/v1';
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('store_admin_token');
 
-    const headers = {
-        'Content-Type': 'application/json',
+    const headers: any = {
         'Accept': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...((options.headers as any) || {}),
     };
+
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     const response = await fetch(`${BASE_URL}${endpoint}`, {
         ...options,
@@ -37,7 +52,7 @@ export const storeAdminApi = {
         method: 'POST',
         body: JSON.stringify(credentials),
     }),
-    getDashboard: () => apiFetch('/store-admin/dashboard'),
+    getDashboard: (params: string = '') => apiFetch(`/store-admin/dashboard${params}`),
     getOrders: (params: string = '') => apiFetch(`/store-admin/orders${params}`),
     getOrder: (id: string) => apiFetch(`/store-admin/orders/${id}`),
     updateOrderStatus: (id: string, status: string) => apiFetch(`/store-admin/orders/${id}/status`, {
@@ -55,6 +70,22 @@ export const storeAdminApi = {
         method: 'POST',
         body: JSON.stringify(data),
     }),
-    getCustomers: () => apiFetch('/store-admin/customers'),
+    getCustomers: (params: string = '') => apiFetch(`/store-admin/customers${params}`),
     getUser: () => apiFetch('/store-admin/user'),
+    updateProfile: (data: any) => apiFetch('/store-admin/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    updateAvatar: (formData: FormData) => apiFetch('/store-admin/avatar', {
+        method: 'POST',
+        body: formData,
+    }),
+    updatePassword: (data: any) => apiFetch('/store-admin/password', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
+    updateNotificationSettings: (data: any) => apiFetch('/store-admin/notification-settings', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
 };

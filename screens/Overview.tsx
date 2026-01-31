@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout.tsx';
 import { Screen } from '../types.ts';
-import { storeAdminApi } from '../api.ts';
+import { storeAdminApi, formatPrice } from '../api.ts';
 import { RevenueAreaChart, OrderVolumeBarChart } from '../components/Charts.tsx';
 
 interface OverviewProps {
@@ -13,6 +13,7 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('today');
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,11 +41,18 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
     avg_order_value: 0
   };
 
+  const periods = [
+    { label: 'Today', value: 'today', icon: 'today' },
+    { label: 'Last 7 Days', value: 'last_7_days', icon: 'calendar_view_week' },
+    { label: 'Last 30 Days', value: 'last_30_days', icon: 'calendar_month' },
+    { label: 'This Month', value: 'this_month', icon: 'event_repeat' }
+  ];
+
   const kpis = [
-    { title: "Revenue", value: `$${stats.total_revenue.toLocaleString()}`, change: stats.revenue_change >= 0 ? `+${stats.revenue_change}%` : `${stats.revenue_change}%`, icon: "payments", color: stats.revenue_change >= 0 ? "text-primary" : "text-red-500" },
+    { title: "Revenue", value: formatPrice(stats.total_revenue), change: stats.revenue_change >= 0 ? `+${stats.revenue_change}%` : `${stats.revenue_change}%`, icon: "payments", color: stats.revenue_change >= 0 ? "text-primary" : "text-red-500" },
     { title: "Total Orders", value: stats.total_orders.toString(), change: stats.orders_change >= 0 ? `+${stats.orders_change}%` : `${stats.orders_change}%`, icon: "shopping_bag", color: stats.orders_change >= 0 ? "text-primary" : "text-red-500" },
     { title: "Inventory", value: stats.total_inventory.toLocaleString(), alert: null, icon: "inventory_2", color: "text-orange-500" },
-    { title: "Avg Order", value: `$${stats.avg_order_value}`, icon: "trending_up", color: "text-green-500" }
+    { title: "Avg Order", value: formatPrice(stats.avg_order_value), icon: "trending_up", color: "text-green-500" }
   ];
 
   if (loading && !data) {
@@ -63,18 +71,28 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
       onNavigate={onNavigate}
       title={data?.user?.store?.name || "Store Admin"}
       rightAction={
-        <button className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border border-gray-100 flex items-center justify-center">
+        <button
+          onClick={() => setShowCalendar(true)}
+          className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border border-gray-100 flex items-center justify-center active:scale-95 transition-transform"
+        >
           <span className="material-symbols-outlined text-[20px]">calendar_today</span>
         </button>
       }
     >
       <div className="px-4">
-        {/* Date Filter */}
+        {/* Current Period Display */}
+        <div className="pt-4 flex items-center justify-between">
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
+            Viewing: <span className="text-primary">{periods.find(p => p.value === period)?.label}</span>
+          </p>
+          <div className={`px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 ${stats.revenue_change >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+            <span className="material-symbols-outlined text-[12px]">{stats.revenue_change >= 0 ? 'trending_up' : 'trending_down'}</span> {Math.abs(stats.revenue_change)}%
+          </div>
+        </div>
+
+        {/* Date Filter Quick Access */}
         <div className="flex gap-2 py-4 overflow-x-auto no-scrollbar">
-          {[
-            { label: 'Today', value: 'today' },
-            { label: 'Last 7 Days', value: 'last_7_days' }
-          ].map((item) => (
+          {periods.slice(0, 2).map((item) => (
             <button
               key={item.value}
               onClick={() => setPeriod(item.value)}
@@ -84,6 +102,12 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
               {item.label}
             </button>
           ))}
+          <button
+            onClick={() => setShowCalendar(true)}
+            className="px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center gap-2"
+          >
+            More <span className="material-symbols-outlined text-sm">expand_more</span>
+          </button>
         </div>
 
         {/* KPI Grid */}
@@ -104,13 +128,10 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 mb-4 shadow-sm transition-all duration-300 hover:shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold">Sales Performance</h3>
-            <div className={`px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 ${stats.revenue_change >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-              <span className="material-symbols-outlined text-[14px]">{stats.revenue_change >= 0 ? 'trending_up' : 'trending_down'}</span> {Math.abs(stats.revenue_change)}%
-            </div>
           </div>
-          <div className="mb-2">
-            <p className="text-xs text-gray-400 font-medium">Total for selected period</p>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-white">${stats.total_revenue.toLocaleString()}</p>
+          <div className="mb-4">
+            <p className="text-xs text-gray-400 font-medium">Total for {periods.find(p => p.value === period)?.label}</p>
+            <p className="text-3xl font-extrabold text-gray-900 dark:text-white">{formatPrice(stats.total_revenue)}</p>
           </div>
           <RevenueAreaChart data={data?.sales_trend} />
         </div>
@@ -121,13 +142,42 @@ const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
             <h3 className="font-bold">Order Volume</h3>
             <span className="text-[10px] font-bold text-gray-400 uppercase">Live Updates</span>
           </div>
-          <OrderVolumeBarChart />
+          <OrderVolumeBarChart data={data?.order_volume} />
         </div>
 
         <div className="text-center pb-12">
           <p className="text-xs text-gray-400 font-medium italic">Last updated: {new Date().toLocaleTimeString()}</p>
         </div>
       </div>
+
+      {/* Calendar Selection Sheet */}
+      {showCalendar && (
+        <>
+          <div className="fixed inset-0 bg-black/60 z-[100] animate-in fade-in duration-300" onClick={() => setShowCalendar(false)} />
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white dark:bg-gray-900 rounded-t-[32px] z-[101] p-8 pb-12 animate-in slide-in-from-bottom duration-500 shadow-2xl">
+            <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8" />
+            <h3 className="text-xl font-black mb-6">Select Reporting Period</h3>
+            <div className="space-y-3">
+              {periods.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => { setPeriod(p.value); setShowCalendar(false); }}
+                  className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all active:scale-[0.98] ${period === p.value
+                      ? 'bg-primary/5 border-primary text-primary'
+                      : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                    }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined">{p.icon}</span>
+                    <span className="font-bold">{p.label}</span>
+                  </div>
+                  {period === p.value && <span className="material-symbols-outlined">check_circle</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </Layout>
   );
 };

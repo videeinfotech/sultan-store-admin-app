@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { storeAdminApi } from '../api.ts';
+import { storeAdminApi, formatPrice } from '../api.ts';
 
 interface OrderDetailProps {
   orderId: string | null;
@@ -116,7 +116,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ orderId, onBack }) => {
                   <p className="text-sm font-bold truncate">{item.product_name}</p>
                   <p className="text-xs text-gray-400">{item.variant || 'Standard'} • Qty: {item.qty}</p>
                 </div>
-                <p className="font-bold text-sm">${item.price}</p>
+                <p className="font-bold text-sm">{formatPrice(item.price)}</p>
               </div>
             ))}
           </div>
@@ -127,30 +127,25 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ orderId, onBack }) => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 space-y-3 shadow-sm">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Subtotal</span>
-              <span className="font-bold">${order.order_amount}</span>
+              <span className="font-bold">{formatPrice(order.order_amount)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Tax</span>
-              <span className="font-bold">${order.tax || '0.00'}</span>
+              <span className="font-bold">{formatPrice(order.tax || 0)}</span>
             </div>
             <div className="h-px bg-gray-50 dark:bg-gray-700" />
             <div className="flex justify-between items-center pt-1">
               <span className="font-bold">Grand Total</span>
-              <span className="text-2xl font-extrabold text-primary">${order.order_amount}</span>
+              <span className="text-2xl font-extrabold text-primary">{formatPrice(order.order_amount)}</span>
             </div>
           </div>
         </section>
 
-        {/* Actions */}
-        <div className="px-4 mb-10 space-y-3">
-          <button className="w-full h-12 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined">print</span>
-            Print Invoice
-          </button>
-          <button className="w-full h-12 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-100 dark:border-gray-700 font-bold rounded-2xl flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined">mail</span>
-            Email Customer
-          </button>
+        {/* Actions - Removed as requested */}
+        <div className="px-4 mb-10">
+          <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+            <p className="text-xs text-gray-400 font-medium">Order management actions are currently disabled for this branch.</p>
+          </div>
         </div>
 
         <footer className="text-center px-8">

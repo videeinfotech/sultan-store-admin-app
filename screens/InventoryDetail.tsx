@@ -46,7 +46,7 @@ const InventoryDetail: React.FC<InventoryDetailProps> = ({ itemId, onBack }) => 
     );
   }
 
-  const product = data?.product || {};
+  const product = data || {};
   const inventory = data?.inventory || [];
 
   return (

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout.tsx';
 import { Screen, Order } from '../types.ts';
-import { storeAdminApi } from '../api.ts';
+import { storeAdminApi, formatPrice } from '../api.ts';
 
 interface OrdersProps {
   onNavigate: (screen: Screen, id?: string) => void;
@@ -68,7 +68,7 @@ const Orders: React.FC<OrdersProps> = ({ onNavigate }) => {
           </div>
           <div className="flex-1 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Gross Volume</p>
-            <p className="text-2xl font-extrabold text-primary">${stats?.total_revenue?.toLocaleString() || '0'}</p>
+            <p className="text-2xl font-extrabold text-primary">{formatPrice(stats?.total_revenue || 0)}</p>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ const Orders: React.FC<OrdersProps> = ({ onNavigate }) => {
                     <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 ${getStatusColor(order.status)}`}>
                       {order.status}
                     </span>
-                    <p className="text-base font-extrabold text-gray-900 dark:text-white">${typeof order.amount === 'number' ? order.amount.toFixed(2) : order.amount}</p>
+                    <p className="text-base font-extrabold text-gray-900 dark:text-white">{formatPrice(order.amount)}</p>
                   </div>
                 </button>
               ))

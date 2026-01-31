@@ -24,7 +24,16 @@ const barData = [
 ];
 
 export const RevenueAreaChart: React.FC<{ data?: any[] }> = ({ data }) => {
-  const chartData = data && data.length > 0 ? data.map(item => ({ time: item.name, value: item.val })) : areaData;
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[160px] w-full mt-4 flex items-center justify-center border-2 border-dashed border-gray-100 dark:border-gray-700 rounded-xl">
+        <p className="text-xs text-gray-400 font-medium">No sales data for this period</p>
+      </div>
+    );
+  }
+
+  const chartData = data.map(item => ({ time: item.name, value: item.val }));
+
   return (
     <div className="h-[160px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
@@ -59,11 +68,19 @@ export const RevenueAreaChart: React.FC<{ data?: any[] }> = ({ data }) => {
   );
 };
 
-export const OrderVolumeBarChart: React.FC = () => {
+export const OrderVolumeBarChart: React.FC<{ data?: any[] }> = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[120px] w-full mt-6 flex items-center justify-center border-2 border-dashed border-gray-100 dark:border-gray-700 rounded-xl">
+        <p className="text-xs text-gray-400 font-medium">No orders recorded</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[120px] w-full mt-6">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={barData}>
+        <BarChart data={data}>
           <XAxis
             dataKey="day"
             axisLine={false}
@@ -72,8 +89,8 @@ export const OrderVolumeBarChart: React.FC = () => {
             dy={5}
           />
           <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-            {barData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.day === 'T' ? '#135bec' : '#135bec33'} />
+            {data.map((_, index) => (
+              <Cell key={`cell-${index}`} fill="#135bec" />
             ))}
           </Bar>
         </BarChart>
