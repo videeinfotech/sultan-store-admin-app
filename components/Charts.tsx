@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { 
+import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
@@ -23,34 +23,35 @@ const barData = [
   { day: 'S', value: 20 },
 ];
 
-export const RevenueAreaChart: React.FC = () => {
+export const RevenueAreaChart: React.FC<{ data?: any[] }> = ({ data }) => {
+  const chartData = data && data.length > 0 ? data.map(item => ({ time: item.name, value: item.val })) : areaData;
   return (
     <div className="h-[160px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={areaData}>
+        <AreaChart data={chartData}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#135bec" stopOpacity={0.2}/>
-              <stop offset="95%" stopColor="#135bec" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#135bec" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#135bec" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis 
-            dataKey="time" 
-            axisLine={false} 
-            tickLine={false} 
+          <XAxis
+            dataKey="time"
+            axisLine={false}
+            tickLine={false}
             tick={{ fontSize: 10, fill: '#616f89', fontWeight: 'bold' }}
             dy={10}
           />
-          <Tooltip 
+          <Tooltip
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           />
-          <Area 
-            type="monotone" 
-            dataKey="value" 
-            stroke="#135bec" 
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#135bec"
             strokeWidth={3}
-            fillOpacity={1} 
-            fill="url(#colorValue)" 
+            fillOpacity={1}
+            fill="url(#colorValue)"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -63,10 +64,10 @@ export const OrderVolumeBarChart: React.FC = () => {
     <div className="h-[120px] w-full mt-6">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={barData}>
-          <XAxis 
-            dataKey="day" 
-            axisLine={false} 
-            tickLine={false} 
+          <XAxis
+            dataKey="day"
+            axisLine={false}
+            tickLine={false}
             tick={{ fontSize: 10, fill: '#616f89', fontWeight: 'bold' }}
             dy={5}
           />

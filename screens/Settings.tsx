@@ -2,6 +2,7 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import { Screen } from '../types';
+import { useToast } from '../components/Toast';
 
 interface SettingsProps {
   onNavigate: (screen: Screen) => void;
@@ -9,12 +10,13 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ onNavigate, onLogout }) => {
+  const { showToast, confirm } = useToast();
   return (
     <Layout activeScreen={Screen.SETTINGS} onNavigate={onNavigate} title="Profile & Settings">
       <div className="px-6 py-8">
         <div className="flex flex-col items-center mb-10">
           <div className="relative">
-            <div 
+            <div
               className="w-28 h-28 rounded-full border-4 border-white shadow-xl bg-cover"
               style={{ backgroundImage: `url('https://picsum.photos/seed/admin/400')` }}
             />
@@ -39,7 +41,10 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onLogout }) => {
                   <p className="text-[10px] font-black text-gray-400 uppercase mb-1">{field.label}</p>
                   <p className="font-bold">{field.value}</p>
                 </div>
-                <span className="material-symbols-outlined text-primary text-[20px] cursor-pointer">edit</span>
+                <span
+                  className="material-symbols-outlined text-primary text-[20px] cursor-pointer"
+                  onClick={() => showToast('Profile editing is restricted in this demo.', 'info')}
+                >edit</span>
               </div>
             ))}
           </div>
@@ -51,9 +56,9 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onLogout }) => {
             <div className="mb-6">
               <label className="text-[10px] font-black text-gray-400 uppercase block mb-2">Current Password</label>
               <div className="relative">
-                <input 
-                  type="password" 
-                  value="12345678" 
+                <input
+                  type="password"
+                  value="12345678"
                   readOnly
                   className="w-full h-12 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4"
                 />
@@ -62,13 +67,16 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onLogout }) => {
             </div>
             <div className="mb-6">
               <label className="text-[10px] font-black text-gray-400 uppercase block mb-2">New Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 placeholder="Enter new password"
                 className="w-full h-12 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl px-4"
               />
             </div>
-            <button className="w-full h-12 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+            <button
+              onClick={() => showToast('Password updated successfully!', 'success')}
+              className="w-full h-12 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+            >
               Update Password
             </button>
           </div>
@@ -95,8 +103,12 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onLogout }) => {
           </div>
         </section>
 
-        <button 
-          onClick={onLogout}
+        <button
+          onClick={() => confirm({
+            title: 'Sign Out',
+            message: 'Are you sure you want to end your session?',
+            onConfirm: onLogout
+          })}
           className="w-full h-14 border-2 border-red-500 text-red-500 font-black rounded-2xl flex items-center justify-center gap-2 mb-8 active:bg-red-50 transition-colors"
         >
           <span className="material-symbols-outlined">logout</span>
